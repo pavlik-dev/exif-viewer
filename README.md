@@ -16,14 +16,14 @@ You can include the file in your codebase:
 Or fetch it directly from GitHub:
 
 ```html
-<script src="[https://raw.githubusercontent.com/pavlik-dev/exif-viewer/refs/heads/master/exif-viewer.js](https://raw.githubusercontent.com/pavlik-dev/exif-viewer/refs/heads/master/exif-viewer.js)"></script>
+<script src="https://raw.githubusercontent.com/pavlik-dev/exif-viewer/refs/heads/master/exif-viewer.js"></script>
 
 ```
 
 Or from GitHub Pages:
 
 ```html
-<script src="[https://pavlik-dev.github.io/exif-viewer/exif-viewer.js](https://pavlik-dev.github.io/exif-viewer/exif-viewer.js)"></script>
+<script src="https://pavlik-dev.github.io/exif-viewer/exif-viewer.js"></script>
 
 ```
 
