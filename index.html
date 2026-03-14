@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXIF parser</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script src="exif-viewer.js"></script>
+</head>
+<body>
+    <script>
+        function tryParse(file) {
+            const reader = new FileReader();
+            const error = document.getElementById('error');
+            const exifInfo = document.getElementById('exif-info');
+  
+            reader.onload = () => {
+                const arrayBuffer = reader.result;
+                const uint8View = new Uint8Array(arrayBuffer);
+                try {
+                    var fields = parse_exif(uint8View)
+                    error.style.display = 'none'
+                    exifInfo.style.display = 'block';
+                    document.getElementById('basic-tags-grid').innerHTML=''
+                    document.getElementById('all-tags-grid').innerHTML=''
+                    fields.forEach((v, i) => {
+                        show_field(v)
+                    })
+                    add_basic_tags();
+                } catch (err) {
+                    console.error(err.message)
+                    error.innerHTML = err.message + "<br><i style=\"opacity: 50%\">Are you sure this is the right file?</i>"
+                    error.style.display = 'block'
+                    exifInfo.style.display = 'none';
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        var imageInfo = {
+            size: {x:NaN,y:NaN}, // [512, 512]
+            camera: {maker:'', model:''}, // Make, Model
+            datetime: null, // DateTime
+            software: null, // Software
+            exposure: null, // ExposureTime
+            focal: null, // FocalLength
+            iso: null, // ISO
+            aperture: null, // ApertureValue
+            shutter: null, // ShutterSpeedValue
+        };
+
+        function show_field(field) {
+            const div = document.createElement("div")
+            div.className = "grid-child"
+
+            const field_name = document.createElement("p")
+            field_name.className = 'field-name'
+            field_name.innerText = `${field.tag_name} (${field.tag})`
+            div.appendChild(field_name)
+
+            const field_value = document.createElement('p')
+            field_value.innerText = `${(field.decoded instanceof Array) ? field.decoded.join(', ') : field.decoded}`
+            div.appendChild(field_value)
+
+            if (field_value.innerText.trim() == '') {
+                return;
+            }
+
+            switch (field.tag_name) {
+                case "Make":
+                    imageInfo.camera.maker = field.decoded
+                    break;
+                case "Model":
+                    imageInfo.camera.model = field.decoded
+                    break;
+                case "DateTimeOriginal":
+                    imageInfo.datetime = new Date(field.decoded.replace(/:/, '-').replace(/:/, '-')).toLocaleString()
+                    break;
+                case "Software":
+                    imageInfo.software = field.decoded
+                    break;
+                case "FocalLength":
+                    imageInfo.focal = field.decoded
+                    break;
+                case "ExposureTime":
+                    imageInfo.exposure = field.decoded
+                    break;
+                case "ISO":
+                    imageInfo.iso = field.decoded
+                    break;
+                case "ApertureValue":
+                    imageInfo.aperture = field.decoded
+                    break;
+                case "ShutterSpeedValue":
+                    imageInfo.shutter = field.decoded
+                    break;
+
+                case "PixelXDimension":
+                    imageInfo.size.x = field.decoded
+                    break;
+                case "PixelYDimension":
+                    imageInfo.size.y = field.decoded
+                    break;
+            
+                default:
+                    break;
+            }
+
+            // div.innerText = `Field\nName: \nType: ${v.typ}\nValue: `
+            document.getElementById("all-tags-grid").appendChild(div)
+        }
+
+        function add_basic_tags() {
+            if (imageInfo.size.x != NaN && imageInfo.size.y != NaN) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Size"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.size.x}x${imageInfo.size.y}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.camera.model != '') {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Camera"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.camera.maker} ${imageInfo.camera.model}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.datetime != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Date & time"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.datetime}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.software != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Software"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.software}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.focal != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Focal length"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.focal}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.exposure != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Exposure time"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.exposure}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.iso != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "ISO"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.iso}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.aperture != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Aperture value"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.aperture}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+
+            if (imageInfo.shutter != null) {
+                const div = document.createElement("div")
+                div.className = "grid-child"
+
+                const field_name = document.createElement("p")
+                field_name.className = 'field-name'
+                field_name.innerText = "Shutter speed"
+                div.appendChild(field_name)
+
+                const field_value = document.createElement('p')
+                field_value.innerText = `${imageInfo.shutter}`
+                div.appendChild(field_value)
+                document.getElementById("basic-tags-grid").appendChild(div)
+            }
+        }
+    </script>
+
+    <div id="main-content">
+        <h1>EXIF viewer</h1>
+        <details id="about-exif">
+            <summary style="cursor: help;"><b>What is EXIF?</b></summary>
+            EXIF stands for "Exchangeable Image File Format".
+            This type of information is formatted according to the TIFF specification,
+            and may be found in JPG, TIFF, PNG, JP2, PGF, MIFF, HDP, PSP and XCF images,
+            as well as many TIFF-based RAW images, and even some AVI and MOV videos.
+        </details>
+        <br/>
+        <div id="drop-zone" class="drop-container">
+            <img id="image-icon" src="image_upload.svg" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <p id="file-name">Drag & drop files here or <b>click to browse</b></p>
+            <input type="file" id="file-input" hidden>
+        </div>
+        <div id="file-list"></div>
+        <br/>
+        <div id="error">
+            This file doesn't seem to have EXIF metadata.
+        </div>
+
+        <div id="exif-info">
+            <!-- <div id="tabs">
+                <h2>Basic</h2>
+                <h2>Advanced</h2>
+            </div> -->
+            <h2>Basic tags</h2>
+            <div id="basic-tags-grid"></div>
+            <br/>
+            <h2>All tags</h2>
+            <div id="all-tags-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+        });
+
+        function handleFiles(files) {
+            console.log("Files received:", files);
+            document.getElementById('image-icon').src = 'image.svg'
+            document.getElementById('file-name').innerText = files[0].name
+            document.getElementById('file-name').style.fontWeight = 700
+            tryParse(files[0])
+        }
+    </script>
+</body>
+</html>

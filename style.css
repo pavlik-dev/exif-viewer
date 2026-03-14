@@ -1,0 +1,89 @@
+* {
+    box-sizing: border-box;
+}
+
+#tabs {
+    display: grid;
+    grid-template-columns: 45% 45%;
+    gap: 20px;
+    text-align: center;
+    margin:0 auto;
+}
+
+#tabs h2 {
+    background-color: #252525;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+#basic-tags-grid {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+#all-tags-grid {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+}
+
+.grid-child {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid white;
+
+    margin: 5px;
+}
+
+.grid-child .field-name {
+    font-size: small;
+    font-weight: bold;
+}
+
+body {
+    background-color: black;
+    color: white;
+    font-family: "Inter", sans-serif;
+}
+
+#main-content {
+    margin: auto;
+    padding: 10px;
+    width: 95vw;
+    max-width: 600px;
+}
+
+.drop-container {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #5e5e5e;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: rgba(1,1,1,0.3);
+    box-sizing: border-box;
+}
+
+#error {
+    width: 600px;
+    border: 2px solid #550000;
+    background: #330000;
+    padding: 12px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: none;
+}
+
+#about-exif {
+    border: 2px solid #555555;
+    padding: 12px;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+#exif-info {
+    display: none;
+}
